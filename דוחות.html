@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>דוחות - מערכת ת"ת</title>
+    <style>
+        :root {
+            --primary-color: #0A0F2D;
+            --accent-color: #C6A94A;
+            --light-gray: #f5f5f5;
+            --white: #ffffff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-gray);
+            direction: rtl;
+        }
+
+        .header {
+            background: var(--primary-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-logo {
+            height: 40px;
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .report-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .report-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .report-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 1rem 0;
+        }
+
+        .report-label {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .filters {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.3s;
+        }
+
+        .primary-btn {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .secondary-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .chart-container {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            height: 400px;
+        }
+
+        .data-table {
+            width: 100%;
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: normal;
+        }
+
+        .data-table tr:hover {
+            background: var(--light-gray);
+        }
+
+        .export-btn {
+            margin-top: 1rem;
+            margin-right: auto;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="header">
+        <img src="logo.png" alt="לוגו ישיבת אוהל יוסף" class="header-logo">
+        <a href="דף-הבית.html" class="action-btn back-btn">חזרה לדף הבית</a>
+    </header>
+
+    <main class="main-content">
+        <div class="report-cards">
+            <div class="report-card">
+                <div class="report-value">₪15,750</div>
+                <div class="report-label">מכירות היום</div>
+            </div>
+            <div class="report-card">
+                <div class="report-value">₪98,450</div>
+                <div class="report-label">מכירות החודש</div>
+            </div>
+            <div class="report-card">
+                <div class="report-value">15</div>
+                <div class="report-label">פריטים במלאי נמוך</div>
+            </div>
+            <div class="report-card">
+                <div class="report-value">₪45,200</div>
+                <div class="report-label">יתרות ת"ת זהב</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>טווח תאריכים</label>
+                <select onchange="updateReports()">
+                    <option value="today">היום</option>
+                    <option value="week">שבוע אחרון</option>
+                    <option value="month">חודש אחרון</option>
+                    <option value="custom">טווח מותאם</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>קטגוריה</label>
+                <select onchange="updateReports()">
+                    <option value="all">הכל</option>
+                    <option value="clothing">ביגוד</option>
+                    <option value="hygiene">היגיינה</option>
+                    <option value="religious">תשמישי קדושה</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>סוג לקוח</label>
+                <select onchange="updateReports()">
+                    <option value="all">הכל</option>
+                    <option value="yeshiva">בחורי ישיבה</option>
+                    <option value="external">לקוחות חיצוניים</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>סוג תשלום</label>
+                <select onchange="updateReports()">
+                    <option value="all">הכל</option>
+                    <option value="cash">מזומן</option>
+                    <option value="credit">אשראי</option>
+                    <option value="ttt">ת"ת זהב</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="salesChart"></canvas>
+        </div>
+
+        <div class="data-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>תאריך</th>
+                        <th>מוצר</th>
+                        <th>קטגוריה</th>
+                        <th>כמות</th>
+                        <th>מחיר</th>
+                        <th>סה"כ</th>
+                        <th>סוג תשלום</th>
+                    </tr>
+                </thead>
+                <tbody id="sales-data">
+                    <!-- נתונים יתווספו דינמית -->
+                </tbody>
+            </table>
+        </div>
+
+        <button class="action-btn primary-btn export-btn" onclick="exportToExcel()">
+            <i class="fas fa-file-excel"></i>
+            ייצא לאקסל
+        </button>
+    </main>
+
+    <script>
+        // נתונים לדוגמה
+        const salesData = [
+            {
+                date: '2024-01-15',
+                product: 'חולצת לורנס חתנים',
+                category: 'ביגוד',
+                quantity: 2,
+                price: 98,
+                total: 196,
+                paymentType: 'ת"ת זהב'
+            }
+            // יתר הנתונים יתווספו כאן
+        ];
+
+        function updateSalesTable() {
+            const tbody = document.getElementById('sales-data');
+            tbody.innerHTML = '';
+            
+            salesData.forEach(sale => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(sale.date)}</td>
+                    <td>${sale.product}</td>
+                    <td>${sale.category}</td>
+                    <td>${sale.quantity}</td>
+                    <td>₪${sale.price.toFixed(2)}</td>
+                    <td>₪${sale.total.toFixed(2)}</td>
+                    <td>${sale.paymentType}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('he-IL');
+        }
+
+        function initSalesChart() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1/1', '2/1', '3/1', '4/1', '5/1', '6/1', '7/1'],
+                    datasets: [{
+                        label: 'מכירות יומיות',
+                        data: [12000, 19000, 15000, 17000, 14000, 23000, 15750],
+                        borderColor: '#C6A94A',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateReports() {
+            // כאן תתבצע הלוגיקה לעדכון הדוחות לפי הפילטרים
+            updateSalesTable();
+        }
+
+        function exportToExcel() {
+            // כאן תתבצע הלוגיקה לייצוא לאקסל
+            alert('מייצא לאקסל...');
+        }
+
+        // אתחול הדף
+        document.addEventListener('DOMContentLoaded', () => {
+            initSalesChart();
+            updateSalesTable();
+        });
+    </script>
+</body>
+</html>

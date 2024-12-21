@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>ניהול מלאי - מערכת ת"ת</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0A0F2D;
+            --accent-color: #C6A94A;
+            --light-gray: #f5f5f5;
+            --white: #ffffff;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-gray);
+            direction: rtl;
+        }
+
+        .header {
+            background: var(--primary-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-logo {
+            height: 40px;
+        }
+
+        .action-btn {
+            background: var(--accent-color);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .print-options {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--white);
+            padding: 0.5rem;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .print-options label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .print-options input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: var(--primary-color);
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: var(--light-gray);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .barcode-preview {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .in-stock {
+            background: #e6ffe6;
+            color: #006600;
+        }
+
+        .low-stock {
+            background: #fff3e6;
+            color: #cc6600;
+        }
+
+        .out-of-stock {
+            background: #ffe6e6;
+            color: #cc0000;
+        }
+
+        .error {
+            color: #cc0000;
+            font-size: 0.875rem;
+        }
+
+        td.low-stock {
+            color: #cc6600;
+            font-weight: 600;
+        }
+
+        .category-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .category-controls select {
+            flex: 1;
+        }
+
+        .category-controls .action-btn {
+            white-space: nowrap;
+        }
+
+        #category-modal .modal-content {
+            max-width: 400px;
+        }
+
+        .print-controls {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--white);
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th.sortable {
+            cursor: pointer;
+            position: relative;
+            padding-left: 1.5rem;
+            user-select: none;
+        }
+
+        th.sortable:hover {
+            background: var(--primary-color);
+            opacity: 0.9;
+        }
+
+        th.sortable i {
+            position: absolute;
+            left: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        th.sortable:hover i {
+            opacity: 1;
+        }
+
+        .fa-sort-up, .fa-sort-down {
+            opacity: 1 !important;
+            color: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .print-options {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .action-btn {
+                width: 100%;
+            }
+
+            th.sortable {
+                white-space: nowrap;
+            }
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="logo.png" alt="לוגו ישיבת אוהל יוסף" class="header-logo">
+        <a href="דף-הבית.html" class="action-btn back-btn">חזרה לדף הבית</a>
+    </header>
+
+    <main class="main-content">
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="חיפוש מוצר לפי שם או ברקוד...">
+                <button class="action-btn" onclick="filterProducts()">
+                    <i class="fas fa-search"></i>
+                    חיפוש
+                </button>
+            </div>
+            <div class="action-buttons">
+                <div class="print-options">
+                    <label>
+                        <input type="checkbox" id="print-with-names" checked>
+                        הדפס עם שמות מוצרים
+                    </label>
+                    <button class="action-btn" onclick="printBarcodes()">
+                        <i class="fas fa-print"></i>
+                        הדפס ברקודים
+                    </button>
+                </div>
+                <button class="action-btn" onclick="showAddProductModal()">
+                    <i class="fas fa-plus"></i>
+                    הוספת מוצר
+                </button>
+                <button class="action-btn" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i>
+                    ייצוא לאקסל
+                </button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>תמונה</th>
+                    <th class="sortable" onclick="sortTable('name')">
+                        שם מוצר
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" onclick="sortTable('barcode')">
+                        ברקוד
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" onclick="sortTable('category')">
+                        קטגוריה
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" onclick="sortTable('priceYeshiva')">
+                        מחיר ישיבה
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" onclick="sortTable('priceExternal')">
+                        מחיר חיצוני
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" onclick="sortTable('stock')">
+                        מלאי
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th>סטטוס</th>
+                    <th>פעולות</th>
+                </tr>
+            </thead>
+            <tbody id="products-list"></tbody>
+        </table>
+    </main>
+
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h2 id="modal-title">הוספת מוצר חדש</h2>
+            <form id="product-form" onsubmit="saveProduct(event)">
+                <div class="form-group">
+                    <label for="product-name">שם המוצר</label>
+                    <input type="text" id="product-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-barcode">ברקוד</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="text" id="product-barcode" required>
+                        <button type="button" class="action-btn" onclick="generateRandomBarcode()">
+                            <i class="fas fa-random"></i>
+                            ברקוד אקראי
+                        </button>
+                    </div>
+                    <div class="barcode-preview" id="barcode-preview"></div>
+                </div>
+                <div class="form-group">
+                    <label for="product-category">קטגוריה</label>
+                    <div class="category-controls">
+                        <select id="product-category" required>
+                            <!-- יתמלא דינמית -->
+                        </select>
+                        <button type="button" class="action-btn" onclick="showCategoryModal()">
+                            <i class="fas fa-plus"></i>
+                            קטגוריה חדשה
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="price-yeshiva">מחיר ישיבה</label>
+                    <input type="number" id="price-yeshiva" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="price-external">מחיר חיצוני</label>
+                    <input type="number" id="price-external" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-stock">כמות במלאי</label>
+                    <input type="number" id="product-stock" required>
+                </div>
+                <div class="form-group">
+                    <label for="stock-threshold">סף התראה</label>
+                    <input type="number" id="stock-threshold" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-image">תמונת מוצר</label>
+                    <input type="file" id="product-image" accept="image/*" onchange="previewImage(this)">
+                    <div id="image-preview" style="margin-top: 1rem; text-align: center;"></div>
+                </div>
+                <button type="submit" class="action-btn">
+                    <i class="fas fa-save"></i>
+                    שמירה
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- מודאל להוספת קטגוריה -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeCategoryModal()">&times;</button>
+            <h2>הוספת קטגוריה חדשה</h2>
+            <form id="category-form" onsubmit="saveCategory(event)">
+                <div class="form-group">
+                    <label for="category-name">שם הקטגוריה</label>
+                    <input type="text" id="category-name" required>
+                </div>
+                <button type="submit" class="action-btn">
+                    <i class="fas fa-save"></i>
+                    שמירה
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // אתחול קטגוריות מ-localStorage או מערך ברירת מחדל
+        let categories = JSON.parse(localStorage.getItem('categories')) || ['ביגוד', 'היגיינה', 'אחר'];
+        
+        // אתחול מוצרים מ-localStorage או מערך ריק
+        let products = JSON.parse(localStorage.getItem('products')) || [];
+        
+        // Load products when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            displayProducts();
+            displayCategories();
+            // Listen for storage events to sync across tabs
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'products') {
+                    products = JSON.parse(e.newValue) || [];
+                    displayProducts();
+                } else if (e.key === 'categories') {
+                    categories = JSON.parse(e.newValue) || [];
+                    displayCategories();
+                }
+            });
+        });
+
+        // Display products in table
+        function displayProducts() {
+            const tbody = document.getElementById('products-list');
+            tbody.innerHTML = '';
+            
+            products.forEach((product, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <input type="checkbox" name="print-select" value="${index}">
+                    </td>
+                    <td><img src="${product.image || 'placeholder.png'}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover;"></td>
+                    <td>${product.name}</td>
+                    <td>${product.barcode}</td>
+                    <td>${product.category}</td>
+                    <td>₪${product.priceYeshiva}</td>
+                    <td>₪${product.priceExternal}</td>
+                    <td class="${product.stock <= product.threshold ? 'low-stock' : ''}">${product.stock}</td>
+                    <td>${getStockStatus(product)}</td>
+                    <td>
+                        <button class="action-btn" onclick="editProduct(${index})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn" onclick="deleteProduct(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Display categories in select
+        function displayCategories() {
+            const categorySelect = document.getElementById('product-category');
+            categorySelect.innerHTML = '';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // Get stock status with appropriate styling
+        function getStockStatus(product) {
+            if (product.stock <= 0) {
+                return '<span class="status out-of-stock">אזל מהמלאי</span>';
+            } else if (product.stock <= product.threshold) {
+                return '<span class="status low-stock">מלאי נמוך</span>';
+            }
+            return '<span class="status in-stock">במלאי</span>';
+        }
+
+        // Show modal for adding new product
+        function showAddProductModal() {
+            document.getElementById('modal-title').textContent = 'הוספת מוצר חדש';
+            document.getElementById('product-form').reset();
+            document.getElementById('product-modal').style.display = 'flex';
+            document.getElementById('barcode-preview').innerHTML = '';
+            document.getElementById('image-preview').innerHTML = '';
+        }
+
+        // Show modal for editing product
+        function editProduct(index) {
+            const product = products[index];
+            document.getElementById('modal-title').textContent = 'עריכת מוצר';
+            document.getElementById('product-name').value = product.name;
+            document.getElementById('product-barcode').value = product.barcode;
+            document.getElementById('product-category').value = product.category;
+            document.getElementById('price-yeshiva').value = product.priceYeshiva;
+            document.getElementById('price-external').value = product.priceExternal;
+            document.getElementById('product-stock').value = product.stock;
+            document.getElementById('stock-threshold').value = product.threshold;
+            
+            if (product.barcode) {
+                generateBarcodePreview(product.barcode);
+            }
+            
+            if (product.image) {
+                document.getElementById('image-preview').innerHTML = 
+                    `<img src="${product.image}" style="max-width: 200px; max-height: 200px;">`;
+            }
+            
+            document.getElementById('product-form').dataset.editIndex = index;
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        // Save product (new or edited)
+        function saveProduct(event) {
+            event.preventDefault();
+            
+            const productData = {
+                name: document.getElementById('product-name').value,
+                barcode: document.getElementById('product-barcode').value,
+                category: document.getElementById('product-category').value,
+                priceYeshiva: parseFloat(document.getElementById('price-yeshiva').value),
+                priceExternal: parseFloat(document.getElementById('price-external').value),
+                stock: parseInt(document.getElementById('product-stock').value),
+                threshold: parseInt(document.getElementById('stock-threshold').value),
+                image: document.getElementById('image-preview').querySelector('img')?.src || null
+            };
+            
+            const editIndex = event.target.dataset.editIndex;
+            if (editIndex !== undefined) {
+                products[editIndex] = productData;
+            } else {
+                products.push(productData);
+            }
+            
+            localStorage.setItem('products', JSON.stringify(products));
+            displayProducts();
+            closeModal();
+        }
+
+        // Delete product
+        function deleteProduct(index) {
+            if (confirm('האם אתה בטוח שברצונך למחוק מוצר זה?')) {
+                products.splice(index, 1);
+                localStorage.setItem('products', JSON.stringify(products));
+                displayProducts();
+            }
+        }
+
+        // Generate random barcode
+        function generateRandomBarcode() {
+            const randomBarcode = Math.floor(Math.random() * 900000000000) + 100000000000;
+            document.getElementById('product-barcode').value = randomBarcode;
+            generateBarcodePreview(randomBarcode.toString());
+        }
+
+        // Generate barcode preview
+        function generateBarcodePreview(barcode) {
+            const preview = document.getElementById('barcode-preview');
+            preview.innerHTML = '<svg id="barcode"></svg>';
+            try {
+                JsBarcode("#barcode", barcode, {
+                    format: "EAN13",
+                    width: 2,
+                    height: 50,
+                    displayValue: true,
+                    valid: (valid) => {
+                        if (!valid) {
+                            preview.innerHTML = '<p class="error" style="color: red;">ברקוד לא חוקי - נדרש ברקוד באורך 13 ספרות</p>';
+                        }
+                    }
+                });
+            } catch (e) {
+                preview.innerHTML = '<p class="error" style="color: red;">ברקוד לא חוקי - נדרש ברקוד באורך 13 ספרות</p>';
+            }
+        }
+
+        // Print barcodes
+        function printBarcodes() {
+            const selectedProducts = Array.from(document.querySelectorAll('input[name="print-select"]:checked')).map(
+                checkbox => products[checkbox.value]
+            );
+            
+            if (selectedProducts.length === 0) {
+                alert('נא לבחור לפחות מוצר אחד להדפסה');
+                return;
+            }
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html dir="rtl">
+                <head>
+                    <title>הדפסת ברקודים</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        .barcode-container { 
+                            display: inline-block; 
+                            margin: 10px;
+                            text-align: center;
+                            page-break-inside: avoid;
+                        }
+                        .product-name {
+                            margin-top: 5px;
+                            font-size: 12px;
+                        }
+                        @media print {
+                            @page { margin: 0.5cm; }
+                        }
+                    </style>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"><\/script>
+                </head>
+                <body>
+                    ${selectedProducts.map(product => `
+                        <div class="barcode-container">
+                            <svg class="barcode"></svg>
+                            ${document.getElementById('print-with-names').checked ? 
+                                `<div class="product-name">${product.name}</div>` : ''}
+                        </div>
+                    `).join('')}
+                    <script>
+                        const barcodes = ${JSON.stringify(selectedProducts.map(p => p.barcode))};
+                        document.querySelectorAll('.barcode').forEach((svg, index) => {
+                            JsBarcode(svg, barcodes[index], {
+                                format: "EAN13",
+                                width: 2,
+                                height: 50,
+                                displayValue: true
+                            });
+                        });
+                        window.onload = () => window.print();
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // Preview uploaded image
+        function previewImage(input) {
+            const preview = document.getElementById('image-preview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; max-height: 200px;">`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Filter products
+        function filterProducts() {
+            const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+            const filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm) ||
+                product.barcode.includes(searchTerm)
+            );
+            
+            const tbody = document.getElementById('products-list');
+            tbody.innerHTML = '';
+            filteredProducts.forEach((product, index) => {
+                // Reuse display logic for filtered products
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <input type="checkbox" name="print-select" value="${products.indexOf(product)}">
+                    </td>
+                    <td><img src="${product.image || 'placeholder.png'}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover;"></td>
+                    <td>${product.name}</td>
+                    <td>${product.barcode}</td>
+                    <td>${product.category}</td>
+                    <td>₪${product.priceYeshiva}</td>
+                    <td>₪${product.priceExternal}</td>
+                    <td class="${product.stock <= product.threshold ? 'low-stock' : ''}">${product.stock}</td>
+                    <td>${getStockStatus(product)}</td>
+                    <td>
+                        <button class="action-btn" onclick="editProduct(${products.indexOf(product)})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn" onclick="deleteProduct(${products.indexOf(product)})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            const ws = XLSX.utils.json_to_sheet(products.map(p => ({
+                'שם מוצר': p.name,
+                'ברקוד': p.barcode,
+                'קטגוריה': p.category,
+                'מחיר ישיבה': p.priceYeshiva,
+                'מחיר חיצוני': p.priceExternal,
+                'מלאי': p.stock,
+                'סף התראה': p.threshold
+            })));
+            
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "מלאי");
+            XLSX.writeFile(wb, "דוח-מלאי.xlsx");
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('product-modal').style.display = 'none';
+            document.getElementById('product-form').reset();
+            delete document.getElementById('product-form').dataset.editIndex;
+        }
+
+        // Show modal for adding new category
+        function showCategoryModal() {
+            document.getElementById('category-modal').style.display = 'flex';
+        }
+
+        // Close category modal
+        function closeCategoryModal() {
+            document.getElementById('category-modal').style.display = 'none';
+            document.getElementById('category-form').reset();
+        }
+
+        // Save category
+        function saveCategory(event) {
+            event.preventDefault();
+            const categoryName = document.getElementById('category-name').value;
+            if (!categories.includes(categoryName)) {
+                categories.push(categoryName);
+                localStorage.setItem('categories', JSON.stringify(categories));
+                displayCategories();
+            }
+            closeCategoryModal();
+        }
+
+        // Sort state
+        let currentSort = {
+            column: null,
+            direction: 'asc'
+        };
+
+        // Sort table
+        function sortTable(column) {
+            const sortIcon = event.currentTarget.querySelector('i');
+            
+            // Update sort direction
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            // Update all sort icons
+            document.querySelectorAll('th.sortable i').forEach(icon => {
+                icon.className = 'fas fa-sort';
+            });
+
+            // Update clicked column icon
+            sortIcon.className = `fas fa-sort-${currentSort.direction === 'asc' ? 'up' : 'down'}`;
+
+            // Sort products
+            products.sort((a, b) => {
+                let valueA = a[column];
+                let valueB = b[column];
+
+                // Handle numeric values
+                if (column.includes('price') || column === 'stock') {
+                    valueA = parseFloat(valueA);
+                    valueB = parseFloat(valueB);
+                } else {
+                    valueA = valueA.toString().toLowerCase();
+                    valueB = valueB.toString().toLowerCase();
+                }
+
+                if (valueA < valueB) return currentSort.direction === 'asc' ? -1 : 1;
+                if (valueA > valueB) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            displayProducts();
+        }
+    </script>
+</body>
+</html>

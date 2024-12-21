@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת ת"ת זהב</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0A0F2D;
+            --primary-light: #1A2142;
+            --accent-color: #C6A94A;
+            --accent-light: #D4BC71;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --border-color: #ddd;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-gray);
+            direction: rtl;
+        }
+
+        .header {
+            background: var(--primary-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-logo {
+            height: 40px;
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: var(--white);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: 2px solid var(--primary-color);
+            background-color: var(--white);
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 120px;
+            justify-content: center;
+            position: relative;
+        }
+
+        .tab i {
+            font-size: 15px;
+            color: var(--accent-color);
+            transition: all 0.2s ease;
+        }
+
+        .tab:hover {
+            background-color: var(--primary-light);
+            color: var(--white);
+            border-color: var(--accent-color);
+        }
+
+        .tab:hover i {
+            color: var(--accent-light);
+        }
+
+        .tab.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 1px var(--accent-color);
+        }
+
+        .tab.active i {
+            color: var(--accent-color);
+        }
+
+        .tab.active:hover {
+            background-color: var(--primary-light);
+        }
+
+        .tab.active:hover i {
+            color: var(--accent-light);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-bar {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.3s;
+        }
+
+        .primary-btn {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .secondary-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .cards-table {
+            width: 100%;
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .cards-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cards-table th,
+        .cards-table td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cards-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: normal;
+        }
+
+        .balance {
+            font-weight: bold;
+        }
+
+        .positive {
+            color: var(--success);
+        }
+
+        .negative {
+            color: var(--danger);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        #transactions-list tr:hover {
+            background: var(--light-gray);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .amount-input {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .amount-input .currency {
+            position: absolute;
+            right: 8px;
+            color: #666;
+        }
+
+        .amount-input input {
+            padding-right: 25px;
+        }
+
+        .form-actions {
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+
+        .secondary-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.375rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .secondary-button:hover {
+            background-color: #5a6268;
+        }
+        
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            resize: vertical;
+        }
+
+        /* עיצוב החלון המודאלי */
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        /* עיצוב אזור העלאת תמונה */
+        .image-upload-container {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 10px auto;
+            display: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .image-upload-label {
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .image-upload-label:hover {
+            background-color: #e9ecef;
+        }
+
+        .image-upload-input {
+            display: none;
+        }
+
+        /* סגנון כפתור מחיקת תמונה */
+        .remove-image-btn {
+            display: none;
+            margin-top: 5px;
+            padding: 4px 8px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .remove-image-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* עיצוב כפתורי פעולה בטבלה */
+        .table-action-btn {
+            background: none;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            margin: 0 2px;
+            font-size: 1.1em;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .table-action-btn:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+
+        .edit-btn {
+            color: var(--accent-color);
+        }
+
+        .edit-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .delete-btn {
+            color: #dc3545;
+        }
+
+        .delete-btn:hover {
+            color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="logo.png" alt="לוגו ישיבת אוהל יוסף" class="header-logo">
+        <a href="דף-הבית.html" class="action-btn back-btn">חזרה לדף הבית</a>
+    </header>
+
+    <main class="main-content">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('transactions')">
+                <i class="fas fa-exchange-alt"></i>
+                עסקאות
+            </button>
+            <button class="tab" onclick="showTab('cancellations')">
+                <i class="fas fa-ban"></i>
+                ביטולים
+            </button>
+            <button class="tab" onclick="showTab('deposits')">
+                <i class="fas fa-money-bill-wave"></i>
+                הפקדות
+            </button>
+            <button class="tab" onclick="showTab('corrections')">
+                <i class="fas fa-edit"></i>
+                תיקונים
+            </button>
+            <button class="tab" onclick="showTab('cards')">
+                <i class="fas fa-id-card"></i>
+                כרטיסים
+            </button>
+        </div>
+
+        <div class="controls">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="חפש לפי שם בחור או מספר כרטיס">
+                <button class="action-btn secondary-btn">
+                    <i class="fas fa-search"></i>
+                    חיפוש
+                </button>
+            </div>
+            <button class="action-btn primary-btn" onclick="showNewCardModal()">
+                <i class="fas fa-plus"></i>
+                הנפק כרטיס חדש
+            </button>
+            <button class="action-btn secondary-btn" onclick="importFromExcel()">
+                <i class="fas fa-file-import"></i>
+                ייבא מאקסל
+            </button>
+            <button class="action-btn secondary-btn" onclick="exportToExcel()">
+                <i class="fas fa-file-export"></i>
+                ייצא לאקסל
+            </button>
+        </div>
+
+        <div id="cards-tab" class="cards-table" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>קוד כרטיס</th>
+                        <th>שם הבחור</th>
+                        <th>יתרה</th>
+                        <th>פעולות</th>
+                    </tr>
+                </thead>
+                <tbody id="cards-list"></tbody>
+            </table>
+        </div>
+
+        <div id="transactions-tab" class="cards-table" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>תאריך עיסקה</th>
+                        <th>שעה</th>
+                        <th>קוד כרטיס</th>
+                        <th>שם הבחור</th>
+                        <th>סכום עיסקה</th>
+                        <th>יתרה לפני עיסקה</th>
+                        <th>יתרה אחרי עיסקה</th>
+                    </tr>
+                </thead>
+                <tbody id="transactions-list">
+                    <!-- תוכן הטבלה יתווסף דינמית -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="cancellations-tab" class="cards-table" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>תאריך ביטול</th>
+                        <th>שעה</th>
+                        <th>קוד כרטיס</th>
+                        <th>שם הבחור</th>
+                        <th>סכום ביטול</th>
+                        <th>יתרה לפני ביטול</th>
+                        <th>יתרה אחרי ביטול</th>
+                    </tr>
+                </thead>
+                <tbody id="cancellations-list">
+                    <!-- תוכן הטבלה יתווסף דינמית -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="deposits-tab" class="cards-table" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>תאריך הפקדה</th>
+                        <th>שעה</th>
+                        <th>קוד כרטיס</th>
+                        <th>שם הבחור</th>
+                        <th>סכום הפקדה</th>
+                        <th>יתרה לפני הפקדה</th>
+                        <th>יתרה אחרי הפקדה</th>
+                    </tr>
+                </thead>
+                <tbody id="deposits-list">
+                    <!-- תוכן הטבלה יתווסף דינמית -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="corrections-tab" class="cards-table" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>תאריך תיקון</th>
+                        <th>שעה</th>
+                        <th>קוד כרטיס</th>
+                        <th>שם הבחור</th>
+                        <th>סכום תיקון</th>
+                        <th>יתרה לפני תיקון</th>
+                        <th>יתרה אחרי תיקון</th>
+                    </tr>
+                </thead>
+                <tbody id="corrections-list">
+                    <!-- תוכן הטבלה יתווסף דינמית -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="supporters-tab" class="cards-table" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>קוד כרטיס</th>
+                        <th>שם הבחור</th>
+                        <th>יתרה</th>
+                    </tr>
+                </thead>
+                <tbody id="supporters-list">
+                    <!-- תוכן הטבלה יתווסף דינמית -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- מודאל הנפקת כרטיס חדש -->
+    <div id="new-card-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>הנפקת כרטיס חדש</h2>
+                <button class="close-btn" onclick="closeModal('new-card-modal')">&times;</button>
+            </div>
+            <form id="new-card-form">
+                <div class="image-upload-container">
+                    <img id="image-preview" class="image-preview">
+                    <label for="card-image" class="image-upload-label">
+                        <i class="fas fa-upload"></i> בחר תמונה
+                    </label>
+                    <input type="file" id="card-image" class="image-upload-input" accept="image/*">
+                    <button type="button" id="remove-image" class="remove-image-btn">הסר תמונה</button>
+                </div>
+                <div class="form-group">
+                    <label for="card-name">שם הבחור</label>
+                    <input type="text" id="card-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="card-number">קוד כרטיס</label>
+                    <input type="text" id="card-number" pattern="[0-9]{10}" maxlength="10" required>
+                    <button type="button" id="generate-card-number" class="secondary-button">יצירת מספר אקראי</button>
+                </div>
+                <div class="form-group">
+                    <label for="card-class">שיעור</label>
+                    <select id="card-class">
+                        <option value="" selected>בחר שיעור</option>
+                        <option value="שיעור א'">שיעור א'</option>
+                        <option value="שיעור ב'">שיעור ב'</option>
+                        <option value="שיעור ג'">שיעור ג'</option>
+                        <option value="קיבוץ א'">קיבוץ א'</option>
+                        <option value="קיבוץ ב'">קיבוץ ב'</option>
+                        <option value="קיבוץ גבוה">קיבוץ גבוה</option>
+                    </select>
+                    <input type="text" id="card-class-other" placeholder="או הכנס שיעור אחר" style="margin-top: 0.5rem;">
+                </div>
+                <div class="form-group">
+                    <label for="initial-balance">יתרה התחלתית</label>
+                    <div class="amount-input">
+                        <input type="number" id="initial-balance" value="0" min="0" step="0.01" required>
+                        <span class="currency">₪</span>
+                    </div>
+                </div>
+                <!-- שדות נוספים למידע -->
+                <div class="form-group">
+                    <label for="card-email">דוא"ל</label>
+                    <input type="email" id="card-email" placeholder="example@domain.com">
+                </div>
+                <div class="form-group">
+                    <label for="card-phone">טלפון</label>
+                    <input type="tel" id="card-phone" placeholder="050-1234567">
+                </div>
+                <div class="form-group">
+                    <label for="card-address">כתובת</label>
+                    <input type="text" id="card-address" placeholder="רחוב, עיר">
+                </div>
+                <div class="form-group">
+                    <label for="card-notes">הערות</label>
+                    <textarea id="card-notes" rows="3" placeholder="הערות נוספות..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="action-btn primary-btn">הנפק כרטיס</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize globalData if not exists
+        if (!window.globalData) {
+            window.globalData = {
+                transactions: [],
+                cards: [],
+                deposits: [],
+                cancellations: [],
+                corrections: []
+            };
+        }
+
+        // פונקציית הצגת מודל כרטיס חדש
+        function showNewCardModal() {
+            const modal = document.getElementById('new-card-modal');
+            modal.style.display = 'flex';
+        }
+
+        // פונקציית סגירת מודל
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+        }
+
+        // פונקציית ייצוא לאקסל
+        function exportToExcel() {
+            try {
+                // יצירת workbook חדש
+                const wb = XLSX.utils.book_new();
+                
+                // הוספת גליונות
+                if (globalData.transactions.length > 0) {
+                    const wsTransactions = XLSX.utils.json_to_sheet(globalData.transactions);
+                    XLSX.utils.book_append_sheet(wb, wsTransactions, 'עסקאות');
+                }
+                
+                if (globalData.cancellations.length > 0) {
+                    const wsCancellations = XLSX.utils.json_to_sheet(globalData.cancellations);
+                    XLSX.utils.book_append_sheet(wb, wsCancellations, 'ביטולים');
+                }
+                
+                if (globalData.deposits.length > 0) {
+                    const wsDeposits = XLSX.utils.json_to_sheet(globalData.deposits);
+                    XLSX.utils.book_append_sheet(wb, wsDeposits, 'הפקדות');
+                }
+                
+                if (globalData.corrections.length > 0) {
+                    const wsCorrections = XLSX.utils.json_to_sheet(globalData.corrections);
+                    XLSX.utils.book_append_sheet(wb, wsCorrections, 'תיקונים');
+                }
+                
+                if (globalData.cards.length > 0) {
+                    const wsCards = XLSX.utils.json_to_sheet(globalData.cards);
+                    XLSX.utils.book_append_sheet(wb, wsCards, 'כרטיסים');
+                }
+                
+                // שמירת הקובץ
+                XLSX.writeFile(wb, 'מערכת תת זהב.xlsx');
+                alert('הקובץ יוצא בהצלחה!');
+            } catch(e) {
+                console.error('שגיאה בייצוא הקובץ:', e);
+                alert('אירעה שגיאה בייצוא הקובץ. אנא נסה שוב.');
+            }
+        }
+
+        // פונקציית ייבוא מאקסל
+        function importFromExcel() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.xlsx,.xls,.xlsm';
+            
+            fileInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array', bookVBA: true });
+                        
+                        try {
+                            // ייבוא גיליון עסקאות
+                            const transactionsSheet = workbook.Sheets['עיסקאות'];
+                            console.log('גיליונות זמינים:', workbook.SheetNames);
+                            
+                            if (transactionsSheet) {
+                                console.log('נמצא גיליון עסקאות');
+                                const rawTransactions = XLSX.utils.sheet_to_json(transactionsSheet, {
+                                    raw: false,
+                                    defval: ''
+                                });
+                                
+                                console.log('נתונים גולמיים מהאקסל:', rawTransactions);
+                                
+                                if (!Array.isArray(rawTransactions) || rawTransactions.length === 0) {
+                                    console.warn('לא נמצאו נתוני עסקאות בגיליון');
+                                    return;
+                                }
+
+                                // בדיקת מבנה העמודות
+                                const firstRow = rawTransactions[0];
+                                console.log('מבנה שורה ראשונה:', Object.keys(firstRow));
+                                
+                                globalData.transactions = rawTransactions.map((row, index) => {
+                                    console.log(`מעבד שורה ${index + 1}:`, row);
+                                    
+                                    // המרת פורמט השעה ל-HH:mm:ss
+                                    let timeStr = row['שעה'] || '';
+                                    if (timeStr.includes('PM') || timeStr.includes('AM')) {
+                                        const timeParts = timeStr.replace('PM', '').replace('AM', '').trim().split(':');
+                                        let hours = parseInt(timeParts[0]);
+                                        const minutes = timeParts[1] || '00';
+                                        const seconds = '00';
+                                        
+                                        if (timeStr.includes('PM') && hours < 12) {
+                                            hours += 12;
+                                        }
+                                        if (timeStr.includes('AM') && hours === 12) {
+                                            hours = 0;
+                                        }
+                                        
+                                        timeStr = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+                                    }
+
+                                    // נקה רווחים מיותרים מהתאריך
+                                    const rawDate = (row['תאריך עיסקה'] || '').trim();
+                                    const transactionDate = formatHebrewDate(rawDate);
+
+                                    const transaction = {
+                                        'תאריך עיסקה': transactionDate,
+                                        'שעה': timeStr,
+                                        'קוד כרטיס': row['קוד כרטיס'] || '',
+                                        'שם הבחור': row['שם התומך'] || row['שם הבחור'] || '',
+                                        'סכום עיסקה': cleanNumber(row[' סכום עיסקה '] || row['סכום עיסקה'] || '0'),
+                                        'יתרה לפני עיסקה': cleanNumber(row[' יתרה לפני עיסקה '] || row['יתרה לפני עיסקה'] || '0'),
+                                        'יתרה אחרי עיסקה': cleanNumber(row[' יתרה אחרי עיסקה '] || row['יתרה אחרי עיסקה'] || '0')
+                                    };
+                                    
+                                    console.log(`שורה ${index + 1} אחרי עיבוד:`, transaction);
+                                    return transaction;
+                                });
+
+                                console.log('סך הכל עסקאות שיובאו:', globalData.transactions.length);
+                            } else {
+                                console.warn('לא נמצא גיליון עסקאות בקובץ האקסל');
+                            }
+                            // ייבוא גיליון הפקדות
+                            const depositsSheet = workbook.Sheets['הפקדות'];
+                            if (depositsSheet) {
+                                const rawDeposits = XLSX.utils.sheet_to_json(depositsSheet, {
+                                    raw: false,
+                                    defval: ''
+                                });
+                                
+                                console.log('Raw deposits data:', rawDeposits); // דיבאג
+                                
+                                globalData.deposits = rawDeposits.map(row => {
+                                    console.log('Processing deposit row:', row); // דיבאג
+
+                                    // המרת פורמט השעה ל-HH:mm:ss
+                                    let timeStr = row['שעה'] || '';
+                                    if (timeStr.includes('PM') || timeStr.includes('AM')) {
+                                        const timeParts = timeStr.replace('PM', '').replace('AM', '').trim().split(':');
+                                        let hours = parseInt(timeParts[0]);
+                                        const minutes = timeParts[1] || '00';
+                                        const seconds = '00';
+                                        
+                                        if (timeStr.includes('PM') && hours < 12) {
+                                            hours += 12;
+                                        }
+                                        if (timeStr.includes('AM') && hours === 12) {
+                                            hours = 0;
+                                        }
+                                        
+                                        timeStr = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+                                    }
+
+                                    // פונקציה לניקוי ערכים מספריים
+                                    const cleanNumber = (value) => {
+                                        if (!value) return '0';
+                                        return value.toString()
+                                            .replace('₪', '')
+                                            .replace('-', '0')
+                                            .replace(/,/g, '')
+                                            .trim();
+                                    };
+
+                                    // נקה רווחים מיותרים מהתאריך
+                                    const rawDate = (row['תאריך הפקדה'] || '').trim();
+                                    const depositDate = formatHebrewDate(rawDate);
+
+                                    return {
+                                        'תאריך הפקדה': depositDate,
+                                        'שעה': timeStr,
+                                        'קוד כרטיס': row['קוד כרטיס'] || '',
+                                        'שם הבחור': row['שם התומך'] || '',
+                                        'סכום הפקדה': cleanNumber(row[' סכום הפקדה '] || row['סכום הפקדה'] || '0'),
+                                        'יתרה לפני הפקדה': cleanNumber(row[' יתרה לפני הפקדה '] || row['יתרה לפני הפקדה'] || '0'),
+                                        'יתרה אחרי הפקדה': cleanNumber(row[' יתרה אחרי הפקדה '] || row['יתרה אחרי הפקדה'] || '0')
+                                    };
+                                });
+
+                                console.log('Processed deposits:', globalData.deposits); // דיבאג
+                            }
+                            // ייבוא גיליון ביטולים
+                            const cancellationsSheet = workbook.Sheets['ביטולים'];
+                            if (cancellationsSheet) {
+                                const rawCancellations = XLSX.utils.sheet_to_json(cancellationsSheet, {
+                                    raw: false,
+                                    defval: ''
+                                });
+                                
+                                globalData.cancellations = rawCancellations.map(row => {
+                                    // המרת פורמט השעה ל-HH:mm:ss
+                                    let timeStr = row['שעה'] || '';
+                                    if (timeStr.includes('PM') || timeStr.includes('AM')) {
+                                        const timeParts = timeStr.replace('PM', '').replace('AM', '').trim().split(':');
+                                        let hours = parseInt(timeParts[0]);
+                                        const minutes = timeParts[1] || '00';
+                                        const seconds = '00';
+                                        
+                                        if (timeStr.includes('PM') && hours < 12) {
+                                            hours += 12;
+                                        }
+                                        if (timeStr.includes('AM') && hours === 12) {
+                                            hours = 0;
+                                        }
+                                        
+                                        timeStr = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+                                    }
+
+                                    // פונקציה לניקוי ערכים מספריים
+                                    const cleanNumber = (value) => {
+                                        if (!value) return '0';
+                                        return value.toString()
+                                            .replace('₪', '')
+                                            .replace('-', '0')
+                                            .replace(/,/g, '')
+                                            .trim();
+                                    };
+
+                                    // נקה רווחים מיותרים מהתאריך
+                                    const rawDate = (row['תאריך ביטול'] || '').trim();
+                                    const cancellationDate = formatHebrewDate(rawDate);
+
+                                    return {
+                                        'תאריך ביטול': cancellationDate,
+                                        'שעה': timeStr,
+                                        'קוד כרטיס': row['קוד כרטיס'] || '',
+                                        'שם הבחור': row['שם התומך'] || '',
+                                        'סכום ביטול': cleanNumber(row['סכום ביטול']),
+                                        'יתרה לפני ביטול': cleanNumber(row['יתרה לפני ביטול']),
+                                        'יתרה אחרי ביטול': cleanNumber(row['יתרה אחרי ביטול'])
+                                    };
+                                });
+                            }
+                            // ייבוא גיליון תיקונים
+                            const correctionsSheet = workbook.Sheets['תיקונים'];
+                            if (correctionsSheet) {
+                                const rawCorrections = XLSX.utils.sheet_to_json(correctionsSheet, {
+                                    raw: false,
+                                    defval: ''
+                                });
+                                
+                                globalData.corrections = rawCorrections.map(row => {
+                                    // המרת פורמט השעה ל-HH:mm:ss
+                                    let timeStr = row['שעה'] || '';
+                                    if (timeStr.includes('PM') || timeStr.includes('AM')) {
+                                        const timeParts = timeStr.replace('PM', '').replace('AM', '').trim().split(':');
+                                        let hours = parseInt(timeParts[0]);
+                                        const minutes = timeParts[1] || '00';
+                                        const seconds = '00';
+                                        
+                                        if (timeStr.includes('PM') && hours < 12) {
+                                            hours += 12;
+                                        }
+                                        if (timeStr.includes('AM') && hours === 12) {
+                                            hours = 0;
+                                        }
+                                        
+                                        timeStr = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+                                    }
+
+                                    // פונקציה לניקוי ערכים מספריים
+                                    const cleanNumber = (value) => {
+                                        if (!value) return '0';
+                                        return value.toString()
+                                            .replace('₪', '')
+                                            .replace('-', '0')
+                                            .replace(/,/g, '')
+                                            .trim();
+                                    };
+
+                                    // נקה רווחים מיותרים מהתאריך
+                                    const rawDate = (row['תאריך תיקון'] || '').trim();
+                                    const correctionDate = formatHebrewDate(rawDate);
+
+                                    return {
+                                        'תאריך תיקון': correctionDate,
+                                        'שעה': timeStr,
+                                        'קוד כרטיס': row['קוד כרטיס'] || '',
+                                        'שם הבחור': row['שם התומך'] || '',
+                                        'סכום תיקון': cleanNumber(row['סכום תיקון']),
+                                        'יתרה לפני תיקון': cleanNumber(row['יתרה לפני תיקון']),
+                                        'יתרה אחרי תיקון': cleanNumber(row['יתרה אחרי תיקון'])
+                                    };
+                                });
+                            }
+                            // ייבוא גיליון כרטיסים
+                            const cardsSheet = workbook.Sheets['תומכים'];
+                            if (cardsSheet) {
+                                const rawCards = XLSX.utils.sheet_to_json(cardsSheet, {
+                                    raw: false,
+                                    defval: ''
+                                });
+                                
+                                console.log('Raw cards data:', rawCards); // דיבאג
+                                
+                                globalData.cards = rawCards.map(row => {
+                                    // נקה את היתרה ובדוק אם שלילית
+                                    let finalBalance = '0';
+                                    try {
+                                        const balance = cleanNumber(row['יתרה'] || row[' יתרה '] || '0');
+                                        const numericBalance = parseFloat(balance);
+                                        if (!isNaN(numericBalance) && numericBalance > 0) {
+                                            finalBalance = numericBalance.toString();
+                                        }
+                                    } catch (e) {
+                                        console.error('שגיאה בחישוב היתרה:', e);
+                                    }
+
+                                    return {
+                                        'קוד כרטיס': (row['קוד כרטיס'] || '').trim(),
+                                        'שם התומך': (row['שם התומך'] || '').trim(),
+                                        'יתרה': finalBalance
+                                    };
+                                });
+
+                                console.log('Processed cards:', globalData.cards); // דיבאג
+                            }
+                        } catch(e) {
+                            console.error('שגיאה בטעינת גיליון:', e);
+                        }
+
+                        // שמירה מיידית בלוקל סטורג'
+                        console.log('מתחיל שמירת נתונים אחרי ייבוא');
+                        if (saveAllData()) {
+                            console.log('הנתונים נשמרו בהצלחה');
+                            
+                            // עדכון הטבלאות
+                            console.log('מעדכן טבלאות אחרי ייבוא');
+                            updateCardsList();
+                            updateTransactionsList();
+                            updateCancellationsView();
+                            updateDepositsView();
+                            updateCorrectionsView();
+                        } else {
+                            console.error('שגיאה בשמירת הנתונים');
+                        }
+                        
+                        alert('הנתונים יובאו בהצלחה!');
+                    } catch(e) {
+                        console.error('שגיאה כללית בייבוא:', e);
+                        alert('אירעה שגיאה בייבוא הקובץ: ' + e.message);
+                    }
+                };
+                
+                reader.readAsArrayBuffer(file);
+            });
+            
+            fileInput.click();
+        }
+
+        // פונקציית עדכון רשימת העסקאות
+        function updateTransactionsList() {
+            console.log('מתחיל עדכון רשימת העסקאות');
+            console.log('נתוני עסקאות:', globalData.transactions);
+
+            const tableBody = document.querySelector('#transactions-list');
+            if (!tableBody) {
+                console.error('לא נמצא אלמנט #transactions-list');
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            if (!globalData.transactions || !Array.isArray(globalData.transactions) || globalData.transactions.length === 0) {
+                console.log('אין נתוני עסקאות להצגה');
+                tableBody.innerHTML = '<tr><td colspan="7">לא נמצאו נתונים לעסקאות.</td></tr>';
+                return;
+            }
+
+            try {
+                globalData.transactions.forEach((transaction, index) => {
+                    console.log(`מעבד עסקה ${index + 1}:`, transaction);
+                    
+                    const row = document.createElement('tr');
+                    const amount = parseFloat(transaction['סכום עיסקה'] || 0);
+                    
+                    try {
+                        row.innerHTML = `
+                            <td>${transaction['תאריך עיסקה'] || ''}</td>
+                            <td>${transaction['שעה'] || ''}</td>
+                            <td>${transaction['קוד כרטיס'] || ''}</td>
+                            <td>${transaction['שם הבחור'] || ''}</td>
+                            <td class="balance ${amount >= 0 ? 'positive' : 'negative'}">₪${Math.abs(amount).toFixed(2)}</td>
+                            <td>₪${parseFloat(transaction['יתרה לפני עיסקה'] || 0).toFixed(2)}</td>
+                            <td>₪${parseFloat(transaction['יתרה אחרי עיסקה'] || 0).toFixed(2)}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    } catch (rowError) {
+                        console.error(`שגיאה בעיבוד שורה ${index + 1}:`, rowError);
+                    }
+                });
+            } catch (error) {
+                console.error('שגיאה בעדכון טבלת העסקאות:', error);
+                tableBody.innerHTML = '<tr><td colspan="7">אירעה שגיאה בטעינת הנתונים.</td></tr>';
+            }
+            
+            console.log('סיום עדכון רשימת העסקאות');
+        }
+
+        // פונקציית עדכון רשימת הכרטיסים
+        function updateCardsList() {
+            const tableBody = document.querySelector('#cards-list');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            if (!globalData.cards) return;
+            
+            globalData.cards.forEach(card => {
+                const row = document.createElement('tr');
+                const balance = parseFloat(card['יתרה']);
+                const displayBalance = balance <= 0 ? 0 : balance;
+                
+                row.innerHTML = `
+                    <td>${card['קוד כרטיס']}</td>
+                    <td>${card['שם התומך']}</td>
+                    <td class="balance ${displayBalance === 0 ? 'negative' : 'positive'}">₪${displayBalance.toFixed(2)}</td>
+                    <td>
+                        <button class="table-action-btn edit-btn" data-tooltip="ערוך כרטיס" onclick="editCard('${card['קוד כרטיס']}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="table-action-btn delete-btn" data-tooltip="מחק כרטיס" onclick="deleteCard('${card['קוד כרטיס']}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // פונקציית חישוב יתרה
+        function calculateBalance(cardId) {
+            let balance = 0;
+            
+            // הוספת הפקדות
+            globalData.deposits
+                .filter(d => d['קוד כרטיס'] === cardId)
+                .forEach(d => balance += parseFloat(d['סכום הפקדה'] || 0));
+            
+            // הפחתת עסקאות
+            globalData.transactions
+                .filter(t => t['קוד כרטיס'] === cardId)
+                .forEach(t => balance -= parseFloat(t['סכום עיסקה'] || 0));
+            
+            // החזרת ביטולים
+            globalData.cancellations
+                .filter(c => c['קוד כרטיס'] === cardId)
+                .forEach(c => balance += parseFloat(c['סכום ביטול'] || 0));
+            
+            return balance;
+        }
+
+        // פונקציית עדכון רשימת ההפקדות
+        function updateDepositsView() {
+            const tableBody = document.querySelector('#deposits-list');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            if (!globalData.deposits) return;
+            
+            globalData.deposits.forEach(deposit => {
+                const row = document.createElement('tr');
+                const amount = parseFloat(deposit['סכום הפקדה']);
+                row.innerHTML = `
+                    <td>${deposit['תאריך הפקדה']}</td>
+                    <td>${deposit['שעה']}</td>
+                    <td>${deposit['קוד כרטיס']}</td>
+                    <td>${deposit['שם הבחור']}</td>
+                    <td class="balance positive">₪${amount.toFixed(2)}</td>
+                    <td>₪${parseFloat(deposit['יתרה לפני הפקדה']).toFixed(2)}</td>
+                    <td>₪${parseFloat(deposit['יתרה אחרי הפקדה']).toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // פונקציית עדכון רשימת הביטולים
+        function updateCancellationsView() {
+            const tableBody = document.querySelector('#cancellations-list');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            if (!globalData.cancellations) return;
+            
+            globalData.cancellations.forEach(cancellation => {
+                const row = document.createElement('tr');
+                const amount = parseFloat(cancellation['סכום ביטול']);
+                row.innerHTML = `
+                    <td>${cancellation['תאריך ביטול']}</td>
+                    <td>${cancellation['שעה']}</td>
+                    <td>${cancellation['קוד כרטיס']}</td>
+                    <td>${cancellation['שם הבחור']}</td>
+                    <td class="balance ${amount >= 0 ? 'positive' : 'negative'}">₪${Math.abs(amount).toFixed(2)}</td>
+                    <td>₪${parseFloat(cancellation['יתרה לפני ביטול']).toFixed(2)}</td>
+                    <td>₪${parseFloat(cancellation['יתרה אחרי ביטול']).toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // פונקציית עדכון רשימת התיקונים
+        function updateCorrectionsView() {
+            const correctionsTableBody = document.querySelector('#corrections-list');
+            if (!correctionsTableBody) return;
+
+            correctionsTableBody.innerHTML = '';
+            
+            if (!globalData.corrections || !Array.isArray(globalData.corrections)) {
+                globalData.corrections = [];
+                return;
+            }
+
+            globalData.corrections.forEach(correction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatHebrewDate(correction['תאריך תיקון'])}</td>
+                    <td>${correction['שעה']}</td>
+                    <td>${correction['קוד כרטיס']}</td>
+                    <td>${correction['שם הבחור']}</td>
+                    <td>${correction['סכום תיקון']}</td>
+                    <td>${correction['יתרה לפני תיקון']}</td>
+                    <td>${correction['יתרה אחרי תיקון']}</td>
+                `;
+                correctionsTableBody.appendChild(row);
+            });
+        }
+
+        // פונקציית הצגת טאב
+        function showTab(tabName) {
+            // הסתרת כל הטאבים
+            document.querySelectorAll('.cards-table').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // הסרת הסימון מכל הכפתורים
+            document.querySelectorAll('.tab').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // הצגת הטאב הנבחר
+            const selectedTab = document.getElementById(tabName + '-tab');
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+                // עדכון הטבלה המתאימה
+                switch(tabName) {
+                    case 'transactions':
+                        updateTransactionsList();
+                        break;
+                    case 'cards':
+                        updateCardsList();
+                        break;
+                    case 'deposits':
+                        updateDepositsView();
+                        break;
+                    case 'cancellations':
+                        updateCancellationsView();
+                        break;
+                    case 'corrections':
+                        updateCorrectionsView();
+                        break;
+                }
+            }
+            
+            // סימון הכפתור המתאים
+            const button = document.querySelector(`.tab[onclick="showTab('${tabName}')"]`);
+            if (button) {
+                button.classList.add('active');
+            }
+        }
+
+        // פונקציה לניקוי ערכים מספריים
+        function cleanNumber(value) {
+            if (!value) return '0';
+            if (typeof value !== 'string' && typeof value !== 'number') return '0';
+            
+            const trimmedValue = value.toString().trim();
+            // בדיקת מקרים מיוחדים
+            if (trimmedValue === '-' || trimmedValue === '₪ -' || trimmedValue === ' ₪ - ' || trimmedValue === '') return '0';
+            
+            try {
+                // הסרת סימן ₪ ורווחים
+                let cleanValue = trimmedValue
+                    .replace(/₪/g, '')  // הסר את כל סימני ה-₪
+                    .replace(/,/g, '')  // הסר פסיקים
+                    .replace(/\s+/g, '') // הסר את כל הרווחים
+                    .trim();
+                
+                // בדיקה אם הערך הוא מספר תקין
+                const numValue = parseFloat(cleanValue);
+                if (isNaN(numValue)) return '0';
+                
+                return cleanValue || '0';
+            } catch (e) {
+                console.error('שגיאה בניקוי מספר:', e);
+                return '0';
+            }
+        }
+
+        // פונקציית המרת פורמט תאריך עברי
+        function formatHebrewDate(dateStr) {
+            if (!dateStr) return '';
+            
+            // פיצול התאריך לחלקים
+            const parts = dateStr.trim().split(/\s+/);
+            
+            // בדיקה אם יש מספיק חלקים
+            if (parts.length < 3) return dateStr;
+
+            let [day, month, year] = parts;
+            if (!day || !month || !year) return dateStr;
+
+            // הסרת כל הגרשיים הקיימים
+            day = day.replace(/['"]/g, '');
+            year = year.replace(/['"]/g, '');
+
+            // טיפול ביום
+            if (day.length === 1) {
+                // אם יש רק אות אחת, נוסיף גרש
+                day = day + '\'';
+            } else if (day.length === 2) {
+                // אם יש שתי אותיות, נוסיף גרשיים לאות השנייה
+                day = day.charAt(0) + '"' + day.charAt(1);
+            }
+            
+            // הוספת גרשיים לשנה
+            if (year.startsWith('תשפ')) {
+                year = year.replace('תשפ', 'תשפ"');
+            }
+            
+            return `${day} ${month} ${year}`;
+        }
+
+        // פונקציית ייצור מספר כרטיס אקראי
+        function generateRandomCardNumber() {
+            let number = '';
+            for (let i = 0; i < 10; i++) {
+                number += Math.floor(Math.random() * 10);
+            }
+            return number;
+        }
+
+        // הוספת מאזינים לאירועים
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('מתחיל טעינת נתונים');
+            
+            // אתחול אובייקט הנתונים הגלובלי
+            if (!globalData) {
+                globalData = {
+                    cards: [],
+                    transactions: [],
+                    deposits: [],
+                    cancellations: [],
+                    corrections: []
+                };
+            }
+
+            // טעינת כל הנתונים
+            try {
+                console.log('מתחיל טעינת נתונים מ-localStorage');
+
+                // טעינת כרטיסים
+                const savedCards = localStorage.getItem('tttGoldCards');
+                if (savedCards) {
+                    globalData.cards = JSON.parse(savedCards);
+                    console.log('נטענו כרטיסים:', globalData.cards.length);
+                }
+
+                // טעינת עסקאות
+                const savedTransactions = localStorage.getItem('tttGoldTransactions');
+                if (savedTransactions) {
+                    globalData.transactions = JSON.parse(savedTransactions);
+                    console.log('נטענו עסקאות:', globalData.transactions.length);
+                }
+
+                // טעינת ביטולים
+                const savedCancellations = localStorage.getItem('tttGoldCancellations');
+                if (savedCancellations) {
+                    globalData.cancellations = JSON.parse(savedCancellations);
+                    console.log('נטענו ביטולים:', globalData.cancellations.length);
+                }
+
+                // טעינת הפקדות
+                const savedDeposits = localStorage.getItem('tttGoldDeposits');
+                if (savedDeposits) {
+                    globalData.deposits = JSON.parse(savedDeposits);
+                    console.log('נטענו הפקדות:', globalData.deposits.length);
+                }
+
+                // טעינת תיקונים
+                const savedCorrections = localStorage.getItem('tttGoldCorrections');
+                if (savedCorrections) {
+                    globalData.corrections = JSON.parse(savedCorrections);
+                    console.log('נטענו תיקונים:', globalData.corrections.length);
+                }
+
+                console.log('סיום טעינת נתונים בהצלחה');
+                
+                // הצגת הטאב הראשון (עסקאות) מיד אחרי טעינת הנתונים
+                showTab('transactions');
+            } catch (error) {
+                console.error('שגיאה בטעינת נתונים:', error);
+            }
+
+            // הוספת מאזין לטופס הנפקת כרטיס חדש
+            document.getElementById('new-card-form')?.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const cardName = document.getElementById('card-name')?.value || '';
+                const cardNumber = document.getElementById('card-number')?.value || '';
+                const selectClass = document.getElementById('card-class')?.value || '';
+                const otherClass = document.getElementById('card-class-other')?.value || '';
+                const cardClass = otherClass || selectClass; // קודם בודק את השדה המותאם אישית
+                const initialBalance = document.getElementById('initial-balance')?.value || '0';
+                const email = document.getElementById('card-email')?.value || '';
+                const phone = document.getElementById('card-phone')?.value || '';
+                const address = document.getElementById('card-address')?.value || '';
+                const notes = document.getElementById('card-notes')?.value || '';
+                const imagePreview = document.getElementById('image-preview');
+                const imageData = imagePreview && imagePreview.style.display !== 'none' ? imagePreview.src : '';
+
+                // וידוא שהשדות החובה מלאים
+                if (!cardName || !cardNumber || (!selectClass && !otherClass) || !initialBalance) {
+                    alert('נא למלא את שדות החובה');
+                    return;
+                }
+
+                const newCard = {
+                    'שם התומך': cardName,
+                    'קוד כרטיס': cardNumber,
+                    'שיעור': cardClass,
+                    'יתרה': initialBalance,
+                    'דואל': email,
+                    'טלפון': phone,
+                    'כתובת': address,
+                    'הערות': notes,
+                    'תמונה': imageData,
+                    'תאריך הנפקה': new Date().toISOString()
+                };
+
+                if (window.editingCardNumber) {
+                    // עריכת כרטיס קיים
+                    const index = globalData.cards.findIndex(c => c['קוד כרטיס'] === window.editingCardNumber);
+                    if (index !== -1) {
+                        globalData.cards[index] = newCard;
+                    }
+                    window.editingCardNumber = null;
+                } else {
+                    // הוספת כרטיס חדש
+                    globalData.cards.push(newCard);
+                }
+
+                // שמירה בלוקל סטורג'
+                try {
+                    localStorage.setItem('tttGoldCards', JSON.stringify(globalData.cards));
+                } catch (error) {
+                    console.error('שגיאה בשמירת נתוני כרטיס:', error);
+                    alert('שגיאה בשמירת נתוני הכרטיס');
+                    return;
+                }
+
+                // עדכון התצוגה
+                updateCardsList();
+
+                // סגירת החלון
+                const modal = document.getElementById('new-card-modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+
+                // ניקוי הטופס
+                this.reset();
+                if (imagePreview) {
+                    imagePreview.src = '';
+                    imagePreview.style.display = 'none';
+                }
+                document.getElementById('remove-image').style.display = 'none';
+            });
+
+            // טיפול בהעלאת תמונה
+            document.getElementById('card-image')?.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('image-preview');
+                        const removeBtn = document.getElementById('remove-image');
+                        if (preview && removeBtn) {
+                            preview.src = e.target.result;
+                            preview.style.display = 'block';
+                            removeBtn.style.display = 'inline-block';
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // טיפול במחיקת תמונה
+            document.getElementById('remove-image')?.addEventListener('click', function() {
+                const preview = document.getElementById('image-preview');
+                const input = document.getElementById('card-image');
+                const removeBtn = document.getElementById('remove-image');
+                if (preview && input && removeBtn) {
+                    preview.src = '';
+                    preview.style.display = 'none';
+                    input.value = '';
+                    removeBtn.style.display = 'none';
+                }
+            });
+
+            // טיפול בשינוי בחירת שיעור
+            document.getElementById('card-class')?.addEventListener('change', function() {
+                const otherInput = document.getElementById('card-class-other');
+                if (otherInput) {
+                    if (this.value) { // אם נבחר שיעור מהרשימה
+                        otherInput.value = '';
+                        otherInput.disabled = true;
+                    } else { // אם נבחר "בחר שיעור"
+                        otherInput.disabled = false;
+                    }
+                }
+            });
+
+            // טיפול בשינוי בשדה שיעור מותאם אישית
+            document.getElementById('card-class-other')?.addEventListener('input', function() {
+                const selectInput = document.getElementById('card-class');
+                if (selectInput && this.value) {
+                    selectInput.value = ''; // נקה את הבחירה מהרשימה אם הוכנס טקסט
+                }
+            });
+        });
+
+        // פונקציית חיפוש גלובלית
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            
+            // מציאת הטאב הפעיל
+            const activeTab = document.querySelector('.cards-table[style*="display: block"]');
+            if (!activeTab) return;
+            
+            const tabId = activeTab.id;
+            const rows = activeTab.getElementsByTagName('tr');
+            
+            // דילוג על שורת הכותרת
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+                
+                // חיפוש בכל התאים בשורה
+                for (let cell of cells) {
+                    if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                // הצגה או הסתרה של השורה בהתאם לתוצאת החיפוש
+                row.style.display = found || searchTerm === '' ? '' : 'none';
+            }
+            
+            // עדכון כותרת עם מספר התוצאות
+            updateSearchResults(tabId);
+        }
+
+        // פונקציה לעדכון מספר תוצאות החיפוש
+        function updateSearchResults(tabId) {
+            const table = document.getElementById(tabId);
+            const visibleRows = Array.from(table.getElementsByTagName('tr'))
+                .filter(row => row.style.display !== 'none' && !row.classList.contains('header-row'))
+                .length;
+            
+            const resultsText = visibleRows === 0 ? 'לא נמצאו תוצאות' : 
+                              `נמצאו ${visibleRows} תוצאות`;
+            
+            // עדכון כותרת הטבלה עם מספר התוצאות
+            const headerCell = table.querySelector('.header-row th');
+            if (headerCell) {
+                const originalTitle = headerCell.getAttribute('data-original-title') || headerCell.textContent;
+                headerCell.setAttribute('data-original-title', originalTitle);
+                headerCell.textContent = `${originalTitle} (${resultsText})`;
+            }
+        }
+
+        // הוספת מאזין אירועים לשדה החיפוש
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', performSearch);
+                // ניקוי החיפוש בעת מעבר בין טאבים
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        searchInput.value = '';
+                        performSearch();
+                    });
+                });
+            }
+        });
+
+        // פונקציית עריכת כרטיס
+        function editCard(cardNumber) {
+            const card = globalData.cards.find(c => c['קוד כרטיס'] === cardNumber);
+            if (!card) return;
+
+            // מילוי הטופס בנתונים הקיימים
+            document.getElementById('card-number').value = card['קוד כרטיס'];
+            document.getElementById('card-name').value = card['שם התומך'];
+            document.getElementById('initial-balance').value = card['יתרה'];
+            
+            // הצגת המודאל
+            document.getElementById('new-card-modal').style.display = 'flex';
+            document.querySelector('#new-card-modal h2').textContent = 'עריכת כרטיס';
+            
+            // שמירת מצב העריכה
+            window.editingCardNumber = cardNumber;
+        }
+
+        // פונקציית מחיקת כרטיס
+        function deleteCard(cardNumber) {
+            if (!confirm('האם אתה בטוח שברצונך למחוק את הכרטיס?')) return;
+
+            globalData.cards = globalData.cards.filter(c => c['קוד כרטיס'] !== cardNumber);
+            localStorage.setItem('tttGoldCards', JSON.stringify(globalData.cards));
+            updateCardsList();
+        }
+
+        // פונקציית שמירת כל הנתונים ב-localStorage
+        function saveAllData() {
+            console.log('מתחיל שמירת נתונים ב-localStorage');
+            try {
+                // שמירת כרטיסים
+                const cards = globalData.cards || [];
+                localStorage.setItem('tttGoldCards', JSON.stringify(cards));
+                console.log('נשמרו כרטיסים:', cards.length);
+
+                // שמירת עסקאות
+                const transactions = globalData.transactions || [];
+                localStorage.setItem('tttGoldTransactions', JSON.stringify(transactions));
+                console.log('נשמרו עסקאות:', transactions.length);
+
+                // שמירת ביטולים
+                const cancellations = globalData.cancellations || [];
+                localStorage.setItem('tttGoldCancellations', JSON.stringify(cancellations));
+                console.log('נשמרו ביטולים:', cancellations.length);
+
+                // שמירת הפקדות
+                const deposits = globalData.deposits || [];
+                localStorage.setItem('tttGoldDeposits', JSON.stringify(deposits));
+                console.log('נשמרו הפקדות:', deposits.length);
+
+                // שמירת תיקונים
+                const corrections = globalData.corrections || [];
+                localStorage.setItem('tttGoldCorrections', JSON.stringify(corrections));
+                console.log('נשמרו תיקונים:', corrections.length);
+
+                console.log('כל הנתונים נשמרו בהצלחה');
+                return true;
+            } catch (error) {
+                console.error('שגיאה בשמירת נתונים:', error);
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>קופה - מערכת ת"ת</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0A0F2D;
+            --accent-color: #C6A94A;
+            --light-gray: #f5f5f5;
+            --white: #ffffff;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-gray);
+            direction: rtl;
+        }
+
+        .header {
+            background: var(--primary-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-logo {
+            height: 40px;
+        }
+
+        .action-btn {
+            background: var(--accent-color);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* רשימת מוצרים */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .product-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            cursor: pointer; /* הוספת סגנון מצביע יד */
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .product-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-price {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-stock {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        /* סל קניות */
+        .cart-container {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .cart-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .cart-items {
+            max-height: calc(100vh - 400px);
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+        }
+
+        .cart-item-price {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quantity-btn {
+            background: var(--light-gray);
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-summary {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--light-gray);
+        }
+
+        .total-amount {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .payment-buttons {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        /* חיפוש וסינון */
+        .search-container {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .customer-type {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: var(--light-gray);
+            border-radius: 4px;
+        }
+
+        .customer-type label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* מודאל תשלום */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-container {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="logo.png" alt="לוגו ישיבת אוהל יוסף" class="header-logo">
+        <a href="דף-הבית.html" class="action-btn back-btn">חזרה לדף הבית</a>
+    </header>
+
+    <main class="main-content">
+        <!-- רשימת מוצרים -->
+        <div class="products-section">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="חיפוש מוצר לפי שם או ברקוד..." oninput="register.filterProducts(this.value)">
+                <button class="action-btn" onclick="register.startBarcodeScanner()">
+                    <i class="fas fa-barcode"></i>
+                    סריקת ברקוד
+                </button>
+            </div>
+
+            <div class="customer-type">
+                <label>
+                    <input type="radio" name="customer-type" value="yeshiva" checked onchange="register.updatePriceDisplay()">
+                    בחור ישיבה
+                </label>
+                <label>
+                    <input type="radio" name="customer-type" value="external" onchange="register.updatePriceDisplay()">
+                    לקוח חיצוני
+                </label>
+            </div>
+
+            <div class="products-grid" id="products-grid">
+                <!-- יתמלא דינמית -->
+            </div>
+        </div>
+
+        <!-- סל קניות -->
+        <div class="cart-container">
+            <div class="cart-title">
+                <h2>סל קניות</h2>
+                <span id="cart-count">0 פריטים</span>
+            </div>
+
+            <div class="cart-items" id="cart-items">
+                <!-- יתמלא דינמית -->
+            </div>
+
+            <div class="cart-summary">
+                <div class="total-amount">סה"כ: ₪<span id="total-amount">0</span></div>
+                
+                <div class="payment-buttons">
+                    <button class="action-btn" onclick="register.showCashPayment()">
+                        <i class="fas fa-money-bill"></i>
+                        תשלום במזומן
+                    </button>
+                    <button class="action-btn" onclick="register.showCreditPayment()">
+                        <i class="fas fa-credit-card"></i>
+                        תשלום באשראי
+                    </button>
+                    <button class="action-btn" onclick="register.showTatZahavPayment()">
+                        <i class="fas fa-id-card"></i>
+                        תשלום בכרטיס ת"ת זהב
+                    </button>
+                    <button class="action-btn" style="background: #dc3545;" onclick="register.clearCart()">
+                        <i class="fas fa-trash"></i>
+                        ביטול עסקה
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- מודאל תשלום במזומן -->
+    <div id="cash-modal" class="modal">
+        <div class="modal-content">
+            <h2>תשלום במזומן</h2>
+            <form id="cash-form" onsubmit="register.processCashPayment(event)">
+                <div class="form-group">
+                    <label>סכום לתשלום: ₪<span id="cash-total"></span></label>
+                </div>
+                <div class="form-group">
+                    <label>סכום שהתקבל</label>
+                    <input type="number" step="0.01" required id="cash-received">
+                </div>
+                <div class="form-group">
+                    <label>עודף לתת: ₪<span id="change-amount">0.00</span></label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="print-cash-receipt">
+                        הדפס קבלה
+                    </label>
+                </div>
+                <div id="cash-receipt-preview" style="display: none;">
+                    <h3>תצוגה מקדימה של הקבלה</h3>
+                    <div class="receipt-content"></div>
+                </div>
+                <button type="submit" class="action-btn">אישור</button>
+                <button type="button" class="action-btn back-btn" onclick="register.closeModal('cash-modal')">ביטול</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- מודאל תשלום באשראי -->
+    <div id="credit-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2>תשלום באשראי</h2>
+            <div class="credit-amount">
+                <h3>סכום לתשלום: ₪<span id="credit-amount"></span></h3>
+                <p>יש לגשת לעמדת התשלום באשראי</p>
+            </div>
+            <form id="credit-form" onsubmit="register.processCreditPayment(event)">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="print-credit-form" checked>
+                        הדפס טופס לחיוב
+                    </label>
+                </div>
+                <div id="credit-details" style="display: none;">
+                    <div class="form-group">
+                        <label>תעודת זהות</label>
+                        <input type="text" pattern="[0-9]{9}" title="נא להזין 9 ספרות">
+                    </div>
+                    <div class="form-group">
+                        <label>שם פרטי</label>
+                        <input type="text">
+                    </div>
+                    <div class="form-group">
+                        <label>שם משפחה</label>
+                        <input type="text">
+                    </div>
+                    <div class="form-group">
+                        <label>כתובת</label>
+                        <input type="text">
+                    </div>
+                    <div class="form-group">
+                        <label>עיר</label>
+                        <input type="text">
+                    </div>
+                    <div class="form-group">
+                        <label>טלפון</label>
+                        <input type="tel" pattern="[0-9]{10}" title="נא להזין 10 ספרות">
+                    </div>
+                    <div class="form-group">
+                        <label>דוא"ל</label>
+                        <input type="email">
+                    </div>
+                </div>
+                <button type="submit" class="action-btn">אישור</button>
+                <button type="button" class="action-btn back-btn" onclick="register.closeModal('credit-modal')">ביטול</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- מודאל תשלום בכרטיס ת"ת זהב -->
+    <div id="tat-zahav-modal" class="modal">
+        <div class="modal-content">
+            <h2>תשלום בכרטיס ת"ת זהב</h2>
+            <form id="tat-zahav-form" onsubmit="register.processTatZahavPayment(event)">
+                <div class="form-group">
+                    <label for="card-number">מספר כרטיס</label>
+                    <input type="text" id="card-number" name="cardNumber" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="print-tat-zahav-receipt">
+                        הדפס קבלה
+                    </label>
+                </div>
+                <button type="submit" class="action-btn">אישור</button>
+                <button type="button" class="action-btn back-btn" onclick="register.closeModal('tat-zahav-modal')">ביטול</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class RegisterManager {
+            constructor() {
+                this.cart = [];
+                this.products = [];
+                this.printer = null;
+                this.init();
+            }
+
+            async init() {
+                await this.setupPrinter();
+                this.loadProducts();
+                this.setupEventListeners();
+                this.setupStorageSync();
+            }
+
+            setupPrinter() {
+                // הגדרות המדפסת התרמית
+                this.printer = {
+                    width: 48, // רוחב הדפסה במ"מ
+                    dpi: 203, // רזולוציה
+                    encoding: 'UTF-8',
+                    font: {
+                        size: 1,
+                        style: 'normal'
+                    }
+                };
+            }
+
+            // פונקציה להדפסת קבלה
+            async printReceipt(transaction, type = 'cash') {
+                if (!transaction) return;
+
+                const receiptContent = [];
+                
+                // כותרת
+                receiptContent.push('ישיבת אוהל יוסף');
+                receiptContent.push('----------------');
+                
+                // פרטי העסקה
+                receiptContent.push(`תאריך: ${new Date().toLocaleDateString('he-IL')}`);
+                receiptContent.push(`שעה: ${new Date().toLocaleTimeString('he-IL')}`);
+                receiptContent.push(`מספר עסקה: ${transaction.id}`);
+                receiptContent.push('----------------');
+                
+                // פירוט המוצרים
+                receiptContent.push('פירוט הקניה:');
+                transaction.items.forEach(item => {
+                    receiptContent.push(`${item.name}`);
+                    receiptContent.push(`${item.quantity} x ₪${item.price} = ₪${item.quantity * item.price}`);
+                });
+                
+                receiptContent.push('----------------');
+                receiptContent.push(`סה"כ: ₪${transaction.total}`);
+                
+                if (type === 'cash' && transaction.cashReceived) {
+                    receiptContent.push(`התקבל: ₪${transaction.cashReceived}`);
+                    receiptContent.push(`עודף: ₪${transaction.cashReceived - transaction.total}`);
+                } else if (type === 'credit') {
+                    receiptContent.push('לתשלום באשראי');
+                    receiptContent.push('נא לגשת לעמדת התשלום');
+                }
+                
+                // הדפסה בפועל
+                try {
+                    // כאן יש להוסיף את הקוד להדפסה בפועל למדפסת התרמית
+                    console.log('מדפיס קבלה:', receiptContent.join('\n'));
+                    
+                    // שימוש ב-Web Serial API להדפסה (צריך להוסיף את הקוד הספציפי למדפסת שלך)
+                    if ('serial' in navigator) {
+                        // קוד התחברות למדפסת והדפסה
+                    }
+                } catch (error) {
+                    console.error('שגיאה בהדפסה:', error);
+                    alert('אירעה שגיאה בהדפסה');
+                }
+            }
+
+            processCashPayment(event) {
+                event.preventDefault();
+                const cashReceived = parseFloat(document.getElementById('cash-received').value);
+                const shouldPrintReceipt = document.getElementById('print-cash-receipt').checked;
+                
+                const transaction = {
+                    id: Date.now(),
+                    items: this.cart,
+                    total: this.getTotal(),
+                    cashReceived: cashReceived,
+                    type: 'cash',
+                    timestamp: new Date()
+                };
+
+                if (shouldPrintReceipt) {
+                    this.printReceipt(transaction, 'cash');
+                }
+
+                this.processTransaction('cash', { cashReceived });
+                this.clearCart();
+                this.closeModal('cash-modal');
+            }
+
+            processCreditPayment(event) {
+                event.preventDefault();
+                const shouldPrintForm = document.getElementById('print-credit-form').checked;
+                
+                const transaction = {
+                    id: Date.now(),
+                    items: this.cart,
+                    total: this.getTotal(),
+                    type: 'credit',
+                    timestamp: new Date()
+                };
+
+                if (shouldPrintForm) {
+                    this.printReceipt(transaction, 'credit');
+                }
+
+                this.processTransaction('credit', {});
+                this.clearCart();
+                this.closeModal('credit-modal');
+            }
+
+            showCashPayment() {
+                const modal = document.getElementById('cash-modal');
+                if (!modal) return;
+                
+                const total = this.getTotal();
+                
+                // עדכון הסכום לתשלום
+                const totalSpan = document.getElementById('cash-total');
+                if (totalSpan) {
+                    totalSpan.textContent = total.toFixed(2);
+                }
+                
+                // איפוס שדה הסכום שהתקבל
+                const cashInput = document.getElementById('cash-received');
+                if (cashInput) {
+                    cashInput.value = total.toFixed(2);
+                }
+                
+                // איפוס שדה העודף
+                const changeAmount = document.getElementById('change-amount');
+                if (changeAmount) {
+                    changeAmount.textContent = '0.00';
+                }
+                
+                // איפוס תיבת הסימון של הקבלה
+                const receiptCheckbox = document.getElementById('print-cash-receipt');
+                if (receiptCheckbox) {
+                    receiptCheckbox.checked = false;
+                }
+                
+                // הסתרת תצוגה מקדימה של הקבלה
+                const receiptPreview = document.getElementById('cash-receipt-preview');
+                if (receiptPreview) {
+                    receiptPreview.style.display = 'none';
+                }
+                
+                modal.style.display = 'flex';
+            }
+
+            setupEventListeners() {
+                // האזנה לשינויים בסוג לקוח
+                document.querySelectorAll('input[name="customer-type"]').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        this.updatePriceDisplay();
+                    });
+                });
+
+                // האזנה לשינויים בסכום מזומן
+                const cashInput = document.getElementById('cash-received');
+                if (cashInput) {
+                    cashInput.addEventListener('input', (e) => {
+                        const received = parseFloat(e.target.value) || 0;
+                        const total = this.getTotal();
+                        const change = received - total;
+                        
+                        const changeAmount = document.getElementById('change-amount');
+                        if (changeAmount) {
+                            changeAmount.textContent = change.toFixed(2);
+                        }
+                    });
+                }
+
+                // האזנה לשינויים בטופס אשראי
+                const creditFormCheckbox = document.getElementById('print-credit-form');
+                const creditDetails = document.getElementById('credit-details');
+                
+                if (creditFormCheckbox && creditDetails) {
+                    creditFormCheckbox.addEventListener('change', (e) => {
+                        creditDetails.style.display = e.target.checked ? 'block' : 'none';
+                    });
+                }
+
+                // האזנה לשינויים בקבלה במזומן
+                const cashReceiptCheckbox = document.getElementById('print-cash-receipt');
+                const receiptPreview = document.getElementById('cash-receipt-preview');
+                
+                if (cashReceiptCheckbox && receiptPreview) {
+                    cashReceiptCheckbox.addEventListener('change', (e) => {
+                        receiptPreview.style.display = e.target.checked ? 'block' : 'none';
+                        if (e.target.checked) {
+                            const content = receiptPreview.querySelector('.receipt-content');
+                            if (content) {
+                                this.updateReceiptPreview(content);
+                            }
+                        }
+                    });
+                }
+            }
+
+            loadProducts() {
+                const savedProducts = localStorage.getItem('products');
+                this.products = savedProducts ? JSON.parse(savedProducts) : [];
+                this.renderProducts();
+            }
+
+            renderProducts() {
+                const grid = document.getElementById('products-grid');
+                grid.innerHTML = '';
+
+                this.products.forEach(product => {
+                    if (!product) return;
+                    
+                    const price = this.getProductPrice(product);
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.onclick = () => {
+                        if (product.stock > 0) {
+                            this.addToCart(product.barcode);
+                        }
+                    };
+                    card.innerHTML = `
+                        <img src="${product.image || 'placeholder.jpg'}" alt="${product.name || 'מוצר'}" class="product-image">
+                        <div class="product-name">${product.name || 'מוצר לא ידוע'}</div>
+                        <div class="product-price">₪${price.toFixed(2)}</div>
+                        <div class="product-stock">${product.stock || 0} יחידות במלאי</div>
+                        <button class="action-btn add-to-cart-btn" onclick="event.stopPropagation(); register.addToCart('${product.barcode}')" 
+                                ${(!product.stock || product.stock <= 0) ? 'disabled' : ''}>
+                            <i class="fas fa-plus"></i>
+                            הוסף לעגלה
+                        </button>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            filterProducts(query) {
+                if (!query) {
+                    this.renderProducts();
+                    return;
+                }
+
+                const filteredProducts = this.products.filter(product => 
+                    product.name.includes(query) || 
+                    product.barcode.includes(query) ||
+                    product.category?.includes(query)
+                );
+
+                const grid = document.getElementById('products-grid');
+                grid.innerHTML = '';
+
+                filteredProducts.forEach(product => {
+                    if (!product) return;
+                    
+                    const price = this.getProductPrice(product);
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.onclick = () => {
+                        if (product.stock > 0) {
+                            this.addToCart(product.barcode);
+                        }
+                    };
+                    card.innerHTML = `
+                        <img src="${product.image || 'placeholder.jpg'}" alt="${product.name || 'מוצר'}" class="product-image">
+                        <div class="product-name">${product.name || 'מוצר לא ידוע'}</div>
+                        <div class="product-price">₪${price.toFixed(2)}</div>
+                        <div class="product-stock">${product.stock || 0} יחידות במלאי</div>
+                        <button class="action-btn add-to-cart-btn" onclick="event.stopPropagation(); register.addToCart('${product.barcode}')"
+                                ${(!product.stock || product.stock <= 0) ? 'disabled' : ''}>
+                            <i class="fas fa-plus"></i>
+                            הוסף לעגלה
+                        </button>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            getProductPrice(product) {
+                if (!product) return 0;
+                const price = this.customerType === 'yeshiva' ? 
+                    (product.priceYeshiva || product.price) : 
+                    (product.priceExternal || product.price);
+                return price || 0;
+            }
+
+            addToCart(barcode) {
+                const product = this.products.find(p => p.barcode === barcode);
+                if (!product) {
+                    alert('מוצר לא נמצא');
+                    return;
+                }
+
+                if (product.stock <= 0) {
+                    alert('מוצר אזל מהמלאי');
+                    return;
+                }
+
+                const cartItem = this.cart.find(item => item.product.barcode === barcode);
+                if (cartItem) {
+                    if (cartItem.quantity >= product.stock) {
+                        alert('אין מספיק במלאי');
+                        return;
+                    }
+                    cartItem.quantity++;
+                } else {
+                    this.cart.push({
+                        product,
+                        quantity: 1
+                    });
+                }
+
+                this.updateCartDisplay();
+            }
+
+            removeFromCart(barcode) {
+                this.cart = this.cart.filter(item => item.product.barcode !== barcode);
+                this.updateCartDisplay();
+            }
+
+            updateQuantity(barcode, newQuantity) {
+                const item = this.cart.find(item => item.product.barcode === barcode);
+                if (!item) return;
+
+                const product = this.products.find(p => p.barcode === barcode);
+                if (!product) return;
+
+                if (newQuantity > product.stock) {
+                    alert('אין מספיק במלאי');
+                    return;
+                }
+
+                if (newQuantity <= 0) {
+                    this.removeFromCart(barcode);
+                    return;
+                }
+
+                item.quantity = newQuantity;
+                this.updateCartDisplay();
+            }
+
+            getTotal() {
+                return this.cart.reduce((total, item) => 
+                    total + (this.getProductPrice(item.product) * item.quantity), 0);
+            }
+
+            updateCartDisplay() {
+                const cartItems = document.getElementById('cart-items');
+                cartItems.innerHTML = '';
+
+                this.cart.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'cart-item';
+                    itemElement.innerHTML = `
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.product.name}</div>
+                            <div class="cart-item-price">₪${this.getProductPrice(item.product).toFixed(2)}</div>
+                        </div>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="register.updateQuantity('${item.product.barcode}', ${item.quantity - 1})">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span>${item.quantity}</span>
+                            <button class="quantity-btn" onclick="register.updateQuantity('${item.product.barcode}', ${item.quantity + 1})">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <button class="quantity-btn" onclick="register.removeFromCart('${item.product.barcode}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    `;
+                    cartItems.appendChild(itemElement);
+                });
+
+                document.getElementById('cart-count').textContent = `${this.cart.length} פריטים`;
+                document.getElementById('total-amount').textContent = this.getTotal().toFixed(2);
+            }
+
+            updatePriceDisplay() {
+                this.renderProducts();
+                this.updateCartDisplay();
+            }
+
+            clearCart() {
+                if (!confirm('האם אתה בטוח שברצונך לבטל את העסקה?')) return;
+                this.cart = [];
+                this.updateCartDisplay();
+            }
+
+            startBarcodeScanner() {
+                // כאן יש להוסיף את הקוד לסריקת ברקוד
+                alert('פונקציה לסריקת ברקוד תתווסף בקרוב');
+            }
+
+            async processCreditPayment(event) {
+                event.preventDefault();
+                
+                const printFormCheckbox = document.getElementById('print-credit-form');
+                const shouldPrintForm = printFormCheckbox ? printFormCheckbox.checked : false;
+                
+                const transaction = {
+                    id: Date.now(),
+                    items: this.cart,
+                    total: this.getTotal(),
+                    type: 'credit',
+                    timestamp: new Date()
+                };
+
+                if (shouldPrintForm) {
+                    this.printReceipt(transaction, 'credit');
+                }
+
+                this.processTransaction('credit', {});
+                this.clearCart();
+                this.closeModal('credit-modal');
+            }
+
+            async processTatZahavPayment(event) {
+                event.preventDefault();
+                const cardNumber = document.getElementById('card-number').value;
+                
+                try {
+                    // טעינת הנתונים מהלוקל סטורג'
+                    const tatZahavData = JSON.parse(localStorage.getItem('tttGoldCards') || '[]');
+                    console.log('Loaded cards:', tatZahavData); // דיבאג
+                    
+                    // חיפוש הכרטיס - בדיקה מדויקת יותר
+                    const card = tatZahavData.find(c => 
+                        c['קוד כרטיס'].toString().trim() === cardNumber.toString().trim()
+                    );
+                    
+                    console.log('Found card:', card); // דיבאג
+                    
+                    if (!card) {
+                        alert('מספר כרטיס לא נמצא');
+                        return;
+                    }
+
+                    // בדיקת יתרה
+                    const total = this.getTotal();
+                    const balance = parseFloat(card['יתרה'] || 0);
+                    
+                    if (balance < total) {
+                        alert('אין מספיק יתרה בכרטיס');
+                        return;
+                    }
+
+                    // עדכון היתרה בכרטיס
+                    card['יתרה'] = (balance - total).toString();
+                    
+                    // שמירת העסקה
+                    const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+                    transactions.push({
+                        'תאריך עיסקה': new Date().toLocaleDateString('he-IL'),
+                        'שעה': new Date().toLocaleTimeString('he-IL'),
+                        'קוד כרטיס': cardNumber,
+                        'שם הבחור': card['שם התומך'],
+                        'סכום עיסקה': total.toString(),
+                        'יתרה לפני עיסקה': balance.toString(),
+                        'יתרה אחרי עיסקה': card['יתרה']
+                    });
+
+                    // שמירת הנתונים המעודכנים
+                    localStorage.setItem('tttGoldCards', JSON.stringify(tatZahavData));
+                    localStorage.setItem('transactions', JSON.stringify(transactions));
+
+                    // עיבוד העסקה
+                    await this.processTransaction('tatZahav', {
+                        cardNumber,
+                        cardHolder: card['שם התומך'],
+                        balanceBefore: balance,
+                        balanceAfter: parseFloat(card['יתרה']),
+                        printReceipt: document.getElementById('print-tat-zahav-receipt').checked
+                    });
+
+                    register.closeModal('tat-zahav-modal');
+                    
+                    // ניקוי הטופס
+                    document.getElementById('card-number').value = '';
+                    document.getElementById('print-tat-zahav-receipt').checked = false;
+                } catch (error) {
+                    console.error('Error processing tat zahav payment:', error);
+                    alert('שגיאה בעיבוד התשלום: ' + error.message);
+                }
+            }
+
+            async processTransaction(paymentMethod, paymentDetails) {
+                // עדכון המלאי
+                for (const item of this.cart) {
+                    const product = this.products.find(p => p.barcode === item.product.barcode);
+                    if (!product) continue;
+
+                    product.stock -= item.quantity;
+                }
+
+                // שמירת העסקה
+                const transaction = {
+                    id: Date.now(),
+                    items: this.cart.map(item => ({
+                        barcode: item.product.barcode,
+                        name: item.product.name,
+                        quantity: item.quantity,
+                        price: this.getProductPrice(item.product)
+                    })),
+                    total: this.getTotal(),
+                    paymentMethod,
+                    paymentDetails,
+                    customerType: this.customerType,
+                    timestamp: new Date().toISOString()
+                };
+
+                // שמירת העסקה בלוקל סטורג'
+                const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+                transactions.push(transaction);
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+
+                // עדכון המלאי בלוקל סטורג'
+                localStorage.setItem('products', JSON.stringify(this.products));
+
+                // שליחת אירוע עדכון מלאי
+                window.dispatchEvent(new CustomEvent('productsUpdated', {
+                    detail: { products: this.products }
+                }));
+
+                if (paymentDetails.printReceipt) {
+                    this.printReceipt(transaction);
+                }
+
+                this.cart = [];
+                this.updateCartDisplay();
+                alert('העסקה הושלמה בהצלחה!');
+            }
+
+            closeModal(modalId) {
+                document.getElementById(modalId).style.display = 'none';
+            }
+
+            setupStorageSync() {
+                // האזנה לשינויים במוצרים מחלונות אחרים
+                window.addEventListener('storage', (event) => {
+                    if (event.key === 'products') {
+                        this.loadProducts();
+                    }
+                });
+
+                // האזנה לשינויים במוצרים מהחלון הנוכחי
+                window.addEventListener('productsUpdated', (event) => {
+                    if (event.detail && event.detail.products) {
+                        this.products = event.detail.products;
+                        this.renderProducts();
+                    }
+                });
+            }
+        }
+
+        // סגירת מודאל בלחיצה מחוץ לתוכן
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // יצירת אובייקט הקופה והפעלת אתחול
+        const register = new RegisterManager();
+
+        // חשיפת פונקציות לשימוש גלובלי
+        window.register = register;
+    </script>
+</body>
+</html>
